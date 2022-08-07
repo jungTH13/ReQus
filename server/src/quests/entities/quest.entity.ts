@@ -76,12 +76,24 @@ export class QuestEntity {
   @Column({ type: 'boolean', nullable: false })
   state: boolean;
 
+  @ApiProperty({
+    example: '제일 먼저 수령하는 사람이 가져가세요',
+    description: '해당 퀘스트에 대한 완료 조건을 작성해 주세요',
+  })
   @Column({ type: 'text' })
   infomation: string;
 
+  @ApiProperty({
+    example: 'Date()',
+    description: '해당 퀘스트 마커의 활성화 시간을 작성해주세요',
+  })
   @Column({ default: () => 'NOW()' })
   startTime: Date;
 
+  @ApiProperty({
+    example: 'Date()',
+    description: '해당 퀘스트 마커의 비활성화 시간을 작성해주세요',
+  })
   @Column()
   endTime: Date;
 
