@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
 import { QuestService } from './quest.service';
 import { CreateQuestDto } from './dto/create-quest.dto';
 import { UpdateQuestDto } from './dto/update-quest.dto';
@@ -15,9 +7,9 @@ import { UpdateQuestDto } from './dto/update-quest.dto';
 export class QuestController {
   constructor(private readonly questService: QuestService) {}
 
-  @Post()
+  @Post('/create')
   create(@Body() createQuestDto: CreateQuestDto) {
-    return this.questService.create(createQuestDto);
+    return this.questService.createQuest(createQuestDto);
   }
 
   @Get()
@@ -25,14 +17,14 @@ export class QuestController {
     return this.questService.findAll();
   }
 
-  @Get(':id')
+  @Get('/:id')
   findOne(@Param('id') id: string) {
-    return this.questService.findOne(+id);
+    return this.questService.findQuestById(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateQuestDto: UpdateQuestDto) {
-    return this.questService.update(+id, updateQuestDto);
+  @Post('/update')
+  update(@Body() updateQuestDto: UpdateQuestDto) {
+    return this.questService.updateQuest(updateQuestDto);
   }
 
   @Delete(':id')
