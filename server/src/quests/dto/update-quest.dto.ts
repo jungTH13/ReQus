@@ -1,7 +1,9 @@
-import { PartialType, PickType } from '@nestjs/mapped-types';
-import { CreateQuestDto } from './create-quest.dto';
+import { PickType } from '@nestjs/mapped-types';
+import { QuestEntity } from '../entities/quest.entity';
 
-export class UpdateQuestDto extends PickType(CreateQuestDto, [
+export class UpdateQuestDto extends PickType(QuestEntity, [
+  'id',
+  'userId',
   'category',
   'title',
   'startTime',

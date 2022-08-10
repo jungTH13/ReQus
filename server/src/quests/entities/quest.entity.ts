@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsString, IsUUID } from 'class-validator';
-import { UserEntity } from 'src/users/entities/user.entity';
+import { UserEntity } from '../../users/entities/user.entity';
+
 import {
   Column,
   CreateDateColumn,
@@ -73,7 +74,7 @@ export class QuestEntity {
   @Column({ type: 'int', nullable: false })
   price: number;
 
-  @Column({ type: 'boolean', nullable: false })
+  @Column({ type: 'boolean', default: true })
   state: boolean;
 
   @ApiProperty({
