@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { CreateQuestDto } from '../dto/create-quest.dto';
 import { UpdateQuestDto } from '../dto/update-quest.dto';
 import { QuestEntity } from '../entities/quest.entity';
@@ -24,10 +24,10 @@ export class QuestRepository {
     });
   }
 
-  async updateQuest(updateQuestDto: UpdateQuestDto): Promise<boolean> {
+  async updateQuest(updateQuestDto: UpdateQuestDto): Promise<UpdateResult> {
     const { id, userId, category, title, startTime, endTime, infomation } =
       updateQuestDto;
-    await this.repository.update(
+    return await this.repository.update(
       {
         id,
         userId,
@@ -40,6 +40,5 @@ export class QuestRepository {
         infomation,
       },
     );
-    return true;
   }
 }
