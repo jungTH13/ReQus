@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsString, IsUUID } from 'class-validator';
+import {
+  IsDate,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { UserEntity } from '../../users/entities/user.entity';
+import * as uuid from 'uuid';
 
 import {
   Column,
@@ -20,6 +27,11 @@ export class QuestEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @ApiProperty({
+    example: uuid.v1(),
+    description: '유저 id',
+    required: true,
+  })
   @IsNotEmpty({ message: '생성 유저의 id가 필요합니다.' })
   @ManyToOne(() => UserEntity, (author: UserEntity) => author.id)
   userId: string;
@@ -85,17 +97,21 @@ export class QuestEntity {
   infomation: string;
 
   @ApiProperty({
-    example: 'Date()',
+    example: new Date(),
     description: '해당 퀘스트 마커의 활성화 시간을 작성해주세요',
   })
-  @Column({ default: () => 'NOW()' })
+  @IsDate()
+  @IsNotEmpty({ message: '시작 시간 정보가 필요합니다.' })
+  @Column({ type: 'datetime' })
   startTime: Date;
 
   @ApiProperty({
-    example: 'Date()',
+    example: new Date(),
     description: '해당 퀘스트 마커의 비활성화 시간을 작성해주세요',
   })
-  @Column()
+  @IsDate()
+  @IsNotEmpty({ message: '종료 시간 정보가 필요합니다.' })
+  @Column({ type: 'datetime' })
   endTime: Date;
 
   @CreateDateColumn()

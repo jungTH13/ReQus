@@ -33,23 +33,23 @@ export class QuestService {
   async updateQuest(updateQuestDto: UpdateQuestDto) {
     this.updateQuestValidation(updateQuestDto);
     const time = new Date();
-    time.setMinutes(time.getMinutes() - 30);
-    const quest: QuestEntity = await this.findQuestById(updateQuestDto.id);
+    time.setMinutes(time.getMinutes() + 30);
+    const quest: QuestEntity = await this.questRepository.findQuestById(
+      updateQuestDto.id,
+    );
     if (!quest.state) {
       throw new BadRequestException('이미 종료된 퀘스트는 수정할 수 없습니다.');
     }
     if (
       updateQuestDto.startTime.getTime() != quest.startTime.getTime() &&
-      time.getTime() < quest.startTime.getTime()
+      time.getTime() > quest.startTime.getTime()
     ) {
       throw new BadRequestException('시작시간의 변경가능 시간이 지났습니다.');
     }
-
-    const result = await this.updateQuest(updateQuestDto);
-    if (!result) {
+    const result = await this.questRepository.updateQuest(updateQuestDto);
+    if (result.affected !== 1) {
       throw new UnprocessableEntityException('퀘스트 업데이트에 실패했습니다.');
     }
-
     return result;
   }
 
@@ -59,8 +59,8 @@ export class QuestService {
 
   createQuestValidation(createQuestDto: CreateQuestDto) {
     if (
-      60000 <=
-      createQuestDto.startTime.getTime() - createQuestDto.endTime.getTime()
+      60000 >
+      createQuestDto.endTime.getTime() - createQuestDto.startTime.getTime()
     ) {
       throw new BadRequestException(
         '종료시간은 시작시간보다 1분이상 늦어야합니다.',

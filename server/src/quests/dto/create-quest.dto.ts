@@ -1,4 +1,4 @@
-import { PickType } from '@nestjs/mapped-types';
+import { PickType } from '@nestjs/swagger';
 import { QuestEntity } from '../entities/quest.entity';
 
 export class CreateQuestDto extends PickType(QuestEntity, [

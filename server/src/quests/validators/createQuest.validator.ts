@@ -2,11 +2,16 @@ import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
 import { CreateQuestDto } from '../dto/create-quest.dto';
 
 @Injectable()
-export class CreateQuestValidationPipe implements PipeTransform {
+export class CreateQuestDtoValidationPipe implements PipeTransform {
   transform(createQuestDto: CreateQuestDto) {
+    if (createQuestDto.startTime < new Date()) {
+      throw new BadRequestException(
+        '시작 시간이 현재 시간보다 빠를 수 없습니다.',
+      );
+    }
     if (
-      60000 <=
-      createQuestDto.startTime.getTime() - createQuestDto.endTime.getTime()
+      60000 >
+      createQuestDto.endTime.getTime() - createQuestDto.startTime.getTime()
     ) {
       throw new BadRequestException(
         '종료시간은 시작시간보다 1분이상 늦어야합니다.',

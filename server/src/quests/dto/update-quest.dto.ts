@@ -1,4 +1,4 @@
-import { PickType } from '@nestjs/mapped-types';
+import { PickType } from '@nestjs/swagger';
 import { QuestEntity } from '../entities/quest.entity';
 
 export class UpdateQuestDto extends PickType(QuestEntity, [
@@ -9,4 +9,4 @@ export class UpdateQuestDto extends PickType(QuestEntity, [
   'startTime',
   'endTime',
   'infomation',
-]) {}
+] as const) {}

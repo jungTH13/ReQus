@@ -1,10 +1,11 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import * as Joi from 'joi';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { LoggerMiddleware } from './common/utils/logger.middleware';
 import { QuestEntity } from './quests/entities/quest.entity';
 import { QuestModule } from './quests/quest.module';
 import { UserEntity } from './users/entities/user.entity';
@@ -22,11 +23,12 @@ const typeOrmModuleOptions = {
     password: configService.get('DB_PASSWORD'),
     database: configService.get('DB_NAME'),
     entities: [QuestEntity, UserEntity], //사용 테이블
-    synchronize: true, //! set 'false' in production 동기화 여부(DB를 재생성한다)
-    dropSchema: true,
+    synchronize: configService.get('NODE_ENV') === 'development', //! set 'false' in production 동기화 여부(DB를 재생성한다)
+    dropSchema: configService.get('NODE_ENV') === 'development',
     autoLoadEntities: true, //자동으로 entity 로드 여부
-    logging: true, // production에서는 로그가 불피요
+    logging: configService.get('NODE_ENV') === 'development', // production에서는 로그가 불피요
     keepConnectionAlive: true, //연결시까지 계속 시도 여부
+    timezone: 'Z', //time 데이터에 대한 타임존 설정
   }),
   inject: [ConfigService],
 };
@@ -57,4 +59,8 @@ const typeOrmModuleOptions = {
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
