@@ -26,7 +26,9 @@ const typeOrmModuleOptions = {
     synchronize: configService.get('NODE_ENV') === 'development', //! set 'false' in production 동기화 여부(DB를 재생성한다)
     dropSchema: configService.get('NODE_ENV') === 'development',
     autoLoadEntities: true, //자동으로 entity 로드 여부
-    logging: configService.get('NODE_ENV') === 'development', // production에서는 로그가 불피요
+    logging:
+      configService.get('NODE_ENV') === 'development' ||
+      configService.get('NODE_ENV') === 'test', // production에서는 로그가 불피요
     keepConnectionAlive: true, //연결시까지 계속 시도 여부
     timezone: 'Z', //time 데이터에 대한 타임존 설정
   }),
