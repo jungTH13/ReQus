@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  Patch,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { QuestService } from './quest.service';
 import { CreateQuestDto } from './dto/create-quest.dto';
 import { UpdateQuestDto } from './dto/update-quest.dto';
@@ -7,24 +17,23 @@ import { CreateQuestDtoValidationPipe } from './validators/createQuest.validator
 import { ParamCreateDto } from './dacorators/createDto.decorator';
 import { ParamUpdateDto } from './dacorators/updateDto.decorator';
 import { UpdateQuestDtoValidationPipe } from './validators/updateQuest.validator';
+import { CurrentUser } from 'src/common/decorators/user.decorator';
 
 @Controller('quest')
 export class QuestController {
   constructor(private readonly questService: QuestService) {}
 
-  @ApiOperation({ summary: '새로운 퀘스트 생성' })
+  @ApiOperation({
+    summary: '새로운 퀘스트 생성',
+    description: 'userId: 유저인증 정보로 덧씌어집니다.',
+  })
   @ApiBody({ type: CreateQuestDto })
-  @Post('create')
+  @Post()
   create(
-    @ParamCreateDto(new CreateQuestDtoValidationPipe())
+    @ParamCreateDto(CreateQuestDtoValidationPipe)
     createQuestDto: CreateQuestDto,
   ) {
     return this.questService.createQuest(createQuestDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.questService.findAll();
   }
 
   @ApiOperation({ summary: '특정 퀘스트를 id로 조회' })
@@ -34,19 +43,36 @@ export class QuestController {
   }
 
   @ApiOperation({ summary: '특정 퀘스트를 User정보로 조회' })
-  @Get('user/:userId')
-  findByUser(@Param('userId') id: string) {
+  @Get('user/:userEmail')
+  findByUser(@Param('userEmail') id: string) {
+    //const user = userRepository.findByEmail(userEmail)
     return this.questService.findQuestById(id);
   }
 
-  @ApiOperation({ summary: '퀘스트 설정 변경' })
+  @ApiOperation({
+    summary: '퀘스트 변경',
+    description: 'userId: 유저인증 정보로 덧씌어집니다.',
+  })
   @ApiBody({ type: UpdateQuestDto })
-  @Post('update')
+  @Patch(':id')
   update(
-    @ParamUpdateDto(new UpdateQuestDtoValidationPipe())
+    @Param('id', ParseUUIDPipe) id: string,
+    @ParamUpdateDto(UpdateQuestDtoValidationPipe)
     updateQuestDto: UpdateQuestDto,
   ) {
-    return this.questService.updateQuest(updateQuestDto);
+    return this.questService.updateQuest(id, updateQuestDto);
+  }
+
+  @ApiOperation({
+    summary: '퀘스트 삭제',
+    description: 'userId: 유저인증 정보로 덧씌어집니다.',
+  })
+  @Delete(':id/:userId')
+  delete(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('userId', ParseUUIDPipe) userId: string,
+  ) {
+    return this.questService.deleteQuest(userId, id);
   }
 }
 

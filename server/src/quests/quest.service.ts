@@ -13,15 +13,15 @@ import { QuestRepository } from './repositories/quest.repository';
 export class QuestService {
   constructor(private readonly questRepository: QuestRepository) {}
 
+  //퀘스트 생성
   async createQuest(createQuestDto: CreateQuestDto) {
-    this.createQuestValidation(createQuestDto);
     return await this.questRepository.createQuest(createQuestDto);
   }
 
   findAll() {
     return `This action returns all quest`;
   }
-
+  //퀘스트 찾기
   async findQuestById(id: string) {
     const result = await this.questRepository.findQuestById(id);
     if (!result) {
@@ -30,13 +30,16 @@ export class QuestService {
     return result;
   }
 
-  async updateQuest(updateQuestDto: UpdateQuestDto) {
-    this.updateQuestValidation(updateQuestDto);
+  //퀘스트 정보 업데이트
+  async updateQuest(id: string, updateQuestDto: UpdateQuestDto) {
     const time = new Date();
     time.setMinutes(time.getMinutes() + 30);
-    const quest: QuestEntity = await this.questRepository.findQuestById(
-      updateQuestDto.id,
-    );
+
+    //해당 퀘스트를 조회하고 유효성 검사
+    const quest: QuestEntity = await this.questRepository.findQuestById(id);
+    if (!quest) {
+      throw new BadRequestException('일치하는 퀘스트가 존재하지 않습니다.');
+    }
     if (!quest.state) {
       throw new BadRequestException('이미 종료된 퀘스트는 수정할 수 없습니다.');
     }
@@ -46,41 +49,37 @@ export class QuestService {
     ) {
       throw new BadRequestException('시작시간의 변경가능 시간이 지났습니다.');
     }
-    const result = await this.questRepository.updateQuest(updateQuestDto);
+
+    //퀘스트의 정보를 변경
+    const result = await this.questRepository.updateQuest(id, updateQuestDto);
     if (result.affected !== 1) {
       throw new UnprocessableEntityException('퀘스트 업데이트에 실패했습니다.');
     }
     return result;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} quest`;
-  }
+  //퀘스트 삭제
+  async deleteQuest(userId: string, questId: string) {
+    const quest = await this.questRepository.findQuestByIdAndUserId(
+      questId,
+      userId,
+    );
+    console.log('******', quest);
+    if (!quest) {
+      throw new BadRequestException(
+        '삭제하는 퀘스트의 생성자와 요청자가 일치하지 않습니다.',
+      );
+    }
+    if (quest.state === false) {
+      throw new BadRequestException('삭제할 수 없는 퀘스트 입니다.');
+    }
+    quest.startTime.setMinutes(quest.startTime.getMinutes() - 30);
+    if (quest.startTime < new Date()) {
+      throw new BadRequestException(
+        '시작시간까지 30분 이내인 경우 삭제할 수 없습니다.',
+      );
+    }
 
-  createQuestValidation(createQuestDto: CreateQuestDto) {
-    if (
-      60000 >
-      createQuestDto.endTime.getTime() - createQuestDto.startTime.getTime()
-    ) {
-      throw new BadRequestException(
-        '종료시간은 시작시간보다 1분이상 늦어야합니다.',
-      );
-    }
-    if (createQuestDto.price < 1000) {
-      throw new BadRequestException('최소 후원 금액은 1000원 이상부터입니다.');
-    }
-    if (createQuestDto.price % 100 != 0) {
-      throw new BadRequestException('후원 금액의 최소 단위는 100원 입니다.');
-    }
-  }
-  updateQuestValidation(updateQuestDto: UpdateQuestDto) {
-    if (
-      60000 <=
-      updateQuestDto.startTime.getTime() - updateQuestDto.endTime.getTime()
-    ) {
-      throw new BadRequestException(
-        '종료시간은 시작시간보다 1분이상 늦어야합니다.',
-      );
-    }
+    return await this.questRepository.deleteQuest(questId);
   }
 }

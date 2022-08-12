@@ -13,19 +13,63 @@ export class QuestRepository {
   ) {}
 
   async createQuest(createQuestDto: CreateQuestDto): Promise<QuestEntity> {
-    return await this.repository.save(createQuestDto);
+    return await this.repository.save(createQuestDto).then((res) => {
+      delete res.userId;
+      return res;
+    });
   }
 
   async findQuestById(id: string): Promise<QuestEntity> {
     return await this.repository.findOne({
+      select: [
+        'id',
+        'category',
+        'x',
+        'y',
+        'title',
+        'price',
+        'state',
+        'infomation',
+        'startTime',
+        'endTime',
+      ],
       where: {
         id,
       },
     });
   }
 
-  async updateQuest(updateQuestDto: UpdateQuestDto): Promise<UpdateResult> {
-    const { id, userId, category, title, startTime, endTime, infomation } =
+  async findQuestByIdAndUserId(
+    id: string,
+    userId: string,
+  ): Promise<QuestEntity> {
+    const result = await this.repository.findOne({
+      select: [
+        'id',
+        'category',
+        'x',
+        'y',
+        'title',
+        'price',
+        'state',
+        'infomation',
+        'startTime',
+        'endTime',
+      ],
+      where: {
+        id,
+        userId,
+      },
+    });
+
+    return result;
+  }
+
+  async updateQuest(
+    id: string,
+    updateQuestDto: UpdateQuestDto,
+  ): Promise<UpdateResult> {
+    const { userId, category, title, startTime, endTime, infomation } =
       updateQuestDto;
     return await this.repository.update(
       {
@@ -40,5 +84,13 @@ export class QuestRepository {
         infomation,
       },
     );
+  }
+
+  async deleteQuest(id: string) {
+    return this.repository
+      .createQueryBuilder()
+      .delete()
+      .where('id = :id', { id })
+      .execute();
   }
 }

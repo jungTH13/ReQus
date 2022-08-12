@@ -13,6 +13,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -32,8 +33,10 @@ export class QuestEntity {
     description: '유저 id',
     required: true,
   })
+  @IsNotEmpty({ message: 'userId가 반드시 필요합니다.' })
+  @Column({ type: 'double', nullable: false })
+  @IsUUID()
   @IsNotEmpty({ message: '생성 유저의 id가 필요합니다.' })
-  @ManyToOne(() => UserEntity, (author: UserEntity) => author.id)
   userId: string;
 
   @ApiProperty({
@@ -119,4 +122,12 @@ export class QuestEntity {
 
   @UpdateDateColumn()
   updateAt: Date;
+
+  //연관관계 설정
+  @ManyToOne(() => UserEntity, (author: UserEntity) => author.id)
+  @JoinColumn({
+    name: 'user_id',
+    referencedColumnName: 'id',
+  })
+  user: UserEntity | undefined;
 }

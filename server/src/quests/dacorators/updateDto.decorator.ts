@@ -3,6 +3,9 @@ import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 export const ParamUpdateDto = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
+    if (request.user) {
+      request.body.userId = request.user.id;
+    }
     if (request.body.startTime) {
       request.body.startTime = new Date(String(request.body.startTime));
     }
