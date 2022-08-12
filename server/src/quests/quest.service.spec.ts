@@ -56,6 +56,7 @@ describe('QuestService', () => {
         state: true,
         creatAt: new Date(),
         updateAt: new Date(),
+        user: undefined,
         ...requestDto,
       };
       jest.spyOn(questRepository, 'createQuest').mockResolvedValue(questDto);
@@ -63,10 +64,10 @@ describe('QuestService', () => {
       // When
       const result = await service.createQuest(requestDto);
 
-      // then
+      // Then
       expect(result).toEqual({ ...result, ...requestDto });
     });
-
+    /*
     it('후원금액이 0원일때 에러를 발생시켜야 합니다.', async () => {
       const startTime = new Date();
       const endTime = new Date();
@@ -157,11 +158,11 @@ describe('QuestService', () => {
         ),
       );
     });
+    */
   });
 
   describe('updateQuest', () => {
-    /*
-    it('생성된 퀘스트의 정보를 업데이트하고 변경된 정보를 반환합니다.', async () => {
+    it('생성된 퀘스트의 정보를 업데이트하고 정보를 반환합니다.', async () => {
       //Given
       const startTime = new Date();
       const endTime = new Date();
@@ -169,7 +170,6 @@ describe('QuestService', () => {
       const userId = uuid.v1();
       endTime.setSeconds(endTime.getSeconds() + 59);
       const requestDto: UpdateQuestDto = {
-        id,
         userId,
         category: 2,
         title: '...',
@@ -177,7 +177,7 @@ describe('QuestService', () => {
         startTime: startTime,
         endTime: endTime,
       };
- 
+
       const dbData: QuestEntity = {
         id,
         userId,
@@ -192,25 +192,27 @@ describe('QuestService', () => {
         endTime: endTime,
         creatAt: new Date(),
         updateAt: new Date(),
+        user: undefined,
+      };
+      const updateResponeDto = {
+        generatedMaps: [],
+        raw: [],
+        affected: 1,
       };
 
-      jest.spyOn(questRepository, 'updateQuest').mockResolvedValue(true);
+      jest
+        .spyOn(questRepository, 'updateQuest')
+        .mockResolvedValue(updateResponeDto);
 
       jest.spyOn(questRepository, 'findQuestById').mockResolvedValue(dbData);
 
       // When
-      const result = await service.updateQuest(requestDto);
+      const result = await service.updateQuest(id, requestDto);
 
       // Then
-      expect(result).toEqual({
-        userId: uuid.v1(),
-        x: 37.42829747263545,
-        y: 126.76620435615891,
-        price: 1000,
-        ...requestDto,
-      });
+      expect(result).toEqual(updateResponeDto);
     });
-    
+
     it('종료된 퀘스트의 업데이트 요청시 에러를 발생해야 합니다.', async () => {
       //Given
       const startTime = new Date();
@@ -219,7 +221,6 @@ describe('QuestService', () => {
       const userId = uuid.v1();
       endTime.setSeconds(endTime.getSeconds() + 59);
       const requestDto: UpdateQuestDto = {
-        id,
         userId,
         category: 2,
         title: '...',
@@ -242,66 +243,19 @@ describe('QuestService', () => {
         endTime: endTime,
         creatAt: new Date(),
         updateAt: new Date(),
+        user: undefined,
       };
 
       jest.spyOn(questRepository, 'findQuestById').mockResolvedValue(dbData);
 
       // When
       const result = async () => {
-        await service.updateQuest(requestDto);
+        await service.updateQuest(id, requestDto);
       };
 
       // Then
       await expect(result).rejects.toThrowError(
         new BadRequestException('이미 종료된 퀘스트는 수정할 수 없습니다.'),
-      );
-    });
-
-    it('퀘스트 업데이트시 종료시간은 시작시간보다 1분이상 늦어야 합니다.', async () => {
-      //Given
-      const startTime = new Date();
-      const endTime = new Date();
-      const id = uuid.v1();
-      const userId = uuid.v1();
-      endTime.setSeconds(endTime.getSeconds() + 59);
-      const requestDto: UpdateQuestDto = {
-        id,
-        userId,
-        category: 2,
-        title: '...',
-        infomation: '...',
-        startTime: startTime,
-        endTime: endTime,
-      };
-
-      const dbData: QuestEntity = {
-        id,
-        userId,
-        x: 37.42829747263545,
-        y: 126.76620435615891,
-        category: 1,
-        title: '먼저온 사람이 가져가세요',
-        price: 1000,
-        infomation: '',
-        state: false,
-        startTime: startTime,
-        endTime: endTime,
-        creatAt: new Date(),
-        updateAt: new Date(),
-      };
-
-      jest.spyOn(questRepository, 'findQuestById').mockResolvedValue(dbData);
-
-      // When
-      const result = async () => {
-        await service.updateQuest(requestDto);
-      };
-
-      // Then
-      await expect(result).rejects.toThrowError(
-        new BadRequestException(
-          '종료시간은 시작시간보다 1분이상 늦어야합니다.',
-        ),
       );
     });
 
@@ -313,7 +267,6 @@ describe('QuestService', () => {
       const userId = uuid.v1();
       endTime.setSeconds(endTime.getSeconds() + 59);
       const requestDto: UpdateQuestDto = {
-        id,
         userId,
         category: 2,
         title: '...',
@@ -321,7 +274,8 @@ describe('QuestService', () => {
         startTime: startTime,
         endTime: endTime,
       };
-      startTime.setMinutes(startTime.getMinutes() + 29);
+      const dbStartTime = new Date();
+      console.log(startTime);
       const dbData: QuestEntity = {
         id,
         userId,
@@ -332,22 +286,101 @@ describe('QuestService', () => {
         price: 1000,
         infomation: '',
         state: true,
-        startTime: startTime,
+        startTime: dbStartTime,
         endTime: endTime,
         creatAt: new Date(),
         updateAt: new Date(),
+        user: undefined,
       };
 
       jest.spyOn(questRepository, 'findQuestById').mockResolvedValue(dbData);
 
       // When
       const result = async () => {
-        await service.updateQuest(requestDto);
+        await service.updateQuest(id, requestDto);
       };
 
       // Then
       await expect(result).rejects.toThrowError(
         new BadRequestException('시작시간의 변경가능 시간이 지났습니다.'),
+      );
+    });
+
+    it('일치하는 퀘스트가 존재하지 않는 경우 에러를 발생시켜야 합니다.', async () => {
+      // Given
+      const startTime = new Date();
+      const endTime = new Date();
+      const id = uuid.v1();
+      const userId = uuid.v1();
+      endTime.setSeconds(endTime.getSeconds() + 59);
+      const requestDto: UpdateQuestDto = {
+        userId,
+        category: 2,
+        title: '...',
+        infomation: '...',
+        startTime: startTime,
+        endTime: endTime,
+      };
+      console.log(startTime);
+
+      jest.spyOn(questRepository, 'findQuestById').mockResolvedValue(null);
+
+      // When
+      const result = async () => {
+        await service.updateQuest(id, requestDto);
+      };
+
+      // Then
+      await expect(result).rejects.toThrowError(
+        new BadRequestException('일치하는 퀘스트가 존재하지 않습니다.'),
+      );
+    });
+    /*
+    it('퀘스트 업데이트시 종료시간은 시작시간보다 1분이상 늦어야 합니다.', async () => {
+      //Given
+      const startTime = new Date();
+      const endTime = new Date();
+      const id = uuid.v1();
+      const userId = uuid.v1();
+      endTime.setSeconds(endTime.getSeconds() + 59);
+      const requestDto: UpdateQuestDto = {
+        userId,
+        category: 2,
+        title: '...',
+        infomation: '...',
+        startTime: startTime,
+        endTime: endTime,
+      };
+
+      const dbData: QuestEntity = {
+        id,
+        userId,
+        x: 37.42829747263545,
+        y: 126.76620435615891,
+        category: 1,
+        title: '먼저온 사람이 가져가세요',
+        price: 1000,
+        infomation: '',
+        state: false,
+        startTime: startTime,
+        endTime: endTime,
+        creatAt: new Date(),
+        updateAt: new Date(),
+        user: undefined,
+      };
+
+      jest.spyOn(questRepository, 'findQuestById').mockResolvedValue(dbData);
+
+      // When
+      const result = async () => {
+        await service.updateQuest(id, requestDto);
+      };
+
+      // Then
+      await expect(result).rejects.toThrowError(
+        new BadRequestException(
+          '종료시간은 시작시간보다 1분이상 늦어야합니다.',
+        ),
       );
     });
     */
