@@ -1,6 +1,8 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as passport from 'passport';
+import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -13,6 +15,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   //글로벌 미들웨어
+  app.use(cookieParser(process.env.JWT_SECRET));
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
